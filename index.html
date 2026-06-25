@@ -141,6 +141,19 @@
             border-radius: 6px;
             font-weight: 600;
         }
+
+        /* Subsecciones (usadas dentro de Hardware) */
+        .subsection-title {
+            font-size: 1.4rem;
+            margin: 2.5rem 0 1.25rem;
+            padding: .35rem 0 .35rem .75rem;
+            border-left: 4px solid #007bff;
+            color: #fff;
+        }
+        .subsection-title:first-of-type {
+            margin-top: 1rem;
+        }
+        .tech-label { color: rgba(255, 255, 255, 0.6); }
         
         /* Mobile: Menu superior */
         @media (max-width: 767px) {
@@ -215,33 +228,25 @@
 <i class="fas fa-home fa-xl mb-2"></i>
 <div class="nav-text small">Home</div>
 </div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="rendimiento">
-<i class="fas fa-tachometer-alt fa-xl mb-2"></i>
-<div class="nav-text small">Rendimiento</div>
-</div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="perfiles">
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="usuario">
 <i class="fas fa-fingerprint fa-xl mb-2"></i>
-<div class="nav-text small">Perfiles</div>
+<div class="nav-text small">Usuario</div>
 </div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="ia">
-<i class="fas fa-brain fa-xl mb-2"></i>
-<div class="nav-text small">IA</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="software">
+<i class="fas fa-laptop-code fa-xl mb-2"></i>
+<div class="nav-text small">Software</div>
 </div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="pizarra">
-<i class="fas fa-chalkboard fa-xl mb-2"></i>
-<div class="nav-text small">Pizarra</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="hardware">
+<i class="fas fa-microchip fa-xl mb-2"></i>
+<div class="nav-text small">Hardware</div>
 </div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="audio">
-<i class="fas fa-volume-up fa-xl mb-2"></i>
-<div class="nav-text small">Audio</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="gestion">
+<i class="fas fa-server fa-xl mb-2"></i>
+<div class="nav-text small">Gestión TI</div>
 </div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="conectividad">
-<i class="fas fa-wifi fa-xl mb-2"></i>
-<div class="nav-text small">Conectividad</div>
-</div>
-<div class="nav-item text-center py-3 px-4 mb-1" data-page="mas">
-<i class="fas fa-ellipsis-h fa-xl mb-2"></i>
-<div class="nav-text small">Más</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="salud">
+<i class="fas fa-heart-pulse fa-xl mb-2"></i>
+<div class="nav-text small">Salud</div>
 </div>
 <div class="nav-item text-center py-3 px-4 mb-1" id="fullscreen-toggle">
 <i class="fas fa-expand fa-xl mb-2"></i>
@@ -253,33 +258,25 @@
 <i class="fas fa-home"></i>
 <span class="nav-text ms-2">Home</span>
 </div>
-<div class="nav-item py-2 px-3 mb-1" data-page="rendimiento">
-<i class="fas fa-tachometer-alt"></i>
-<span class="nav-text ms-2">Rendimiento</span>
-</div>
-<div class="nav-item py-2 px-3 mb-1" data-page="perfiles">
+<div class="nav-item py-2 px-3 mb-1" data-page="usuario">
 <i class="fas fa-fingerprint"></i>
-<span class="nav-text ms-2">Perfiles</span>
+<span class="nav-text ms-2">Usuario</span>
 </div>
-<div class="nav-item py-2 px-3 mb-1" data-page="ia">
-<i class="fas fa-brain"></i>
-<span class="nav-text ms-2">IA</span>
+<div class="nav-item py-2 px-3 mb-1" data-page="software">
+<i class="fas fa-laptop-code"></i>
+<span class="nav-text ms-2">Software</span>
 </div>
-<div class="nav-item py-2 px-3 mb-1" data-page="pizarra">
-<i class="fas fa-chalkboard"></i>
-<span class="nav-text ms-2">Pizarra</span>
+<div class="nav-item py-2 px-3 mb-1" data-page="hardware">
+<i class="fas fa-microchip"></i>
+<span class="nav-text ms-2">Hardware</span>
 </div>
-<div class="nav-item py-2 px-3 mb-1" data-page="audio">
-<i class="fas fa-volume-up"></i>
-<span class="nav-text ms-2">Audio</span>
+<div class="nav-item py-2 px-3 mb-1" data-page="gestion">
+<i class="fas fa-server"></i>
+<span class="nav-text ms-2">Gestión TI</span>
 </div>
-<div class="nav-item py-2 px-3 mb-1" data-page="conectividad">
-<i class="fas fa-wifi"></i>
-<span class="nav-text ms-2">Conectividad</span>
-</div>
-<div class="nav-item py-2 px-3 mb-1" data-page="mas">
-<i class="fas fa-ellipsis-h"></i>
-<span class="nav-text ms-2">Más</span>
+<div class="nav-item py-2 px-3 mb-1" data-page="salud">
+<i class="fas fa-heart-pulse"></i>
+<span class="nav-text ms-2">Salud</span>
 </div>
 <div class="nav-item py-2 px-3 mb-1" id="fullscreen-toggle-tablet">
 <i class="fas fa-expand"></i>
@@ -291,26 +288,20 @@
 <div class="nav-item text-center py-2 px-2 me-1 active" data-page="home">
 <i class="fas fa-home"></i>
 </div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="rendimiento">
-<i class="fas fa-tachometer-alt"></i>
-</div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="perfiles">
+<div class="nav-item text-center py-2 px-2 me-1" data-page="usuario">
 <i class="fas fa-fingerprint"></i>
 </div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="ia">
-<i class="fas fa-brain"></i>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="software">
+<i class="fas fa-laptop-code"></i>
 </div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="pizarra">
-<i class="fas fa-chalkboard"></i>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="hardware">
+<i class="fas fa-microchip"></i>
 </div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="audio">
-<i class="fas fa-volume-up"></i>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="gestion">
+<i class="fas fa-server"></i>
 </div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="conectividad">
-<i class="fas fa-wifi"></i>
-</div>
-<div class="nav-item text-center py-2 px-2 me-1" data-page="mas">
-<i class="fas fa-ellipsis-h"></i>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="salud">
+<i class="fas fa-heart-pulse"></i>
 </div>
 <div class="nav-item text-center py-2 px-2" id="fullscreen-toggle-mobile">
 <i class="fas fa-expand"></i>
