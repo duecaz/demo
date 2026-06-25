@@ -154,6 +154,27 @@
             margin-top: 1rem;
         }
         .tech-label { color: rgba(255, 255, 255, 0.6); }
+
+        /* Tabs de Hardware (pills horizontales, scrollables en mobile) */
+        .hw-tabs {
+            gap: .5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .hw-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .hw-tabs .nav-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+        .hw-tabs .nav-link.active {
+            background: rgba(0, 123, 255, 0.85);
+            border-color: transparent;
+            color: #fff;
+        }
         
         /* Mobile: Menu superior */
         @media (max-width: 767px) {

@@ -6,8 +6,26 @@
     </div>
 </div>
 
-<!-- ══════════════════ SUBSECCIÓN: RENDIMIENTO ══════════════════ -->
-<h3 class="subsection-title">⚡ Rendimiento</h3>
+<!-- ══════════════════ TABS DE HARDWARE ══════════════════ -->
+<ul class="nav nav-pills hw-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="hw-tab-rendimiento" data-bs-toggle="pill" data-bs-target="#hw-rendimiento" type="button" role="tab">⚡ Rendimiento</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="hw-tab-proteccion" data-bs-toggle="pill" data-bs-target="#hw-proteccion" type="button" role="tab">🛡️ Protección</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="hw-tab-conectividad" data-bs-toggle="pill" data-bs-target="#hw-conectividad" type="button" role="tab">🌐 Conectividad</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="hw-tab-audio" data-bs-toggle="pill" data-bs-target="#hw-audio" type="button" role="tab">🔊 Audio y video</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+<!-- ── PANEL: RENDIMIENTO ── -->
+<div class="tab-pane fade show active" id="hw-rendimiento" role="tabpanel" aria-labelledby="hw-tab-rendimiento">
 <p class="mb-3">El procesador RK3588 establece nuevos estándares en pantallas interactivas, superando a la competencia en todas las métricas clave.</p>
 
 <!-- Video de Rendimiento -->
@@ -280,8 +298,10 @@
     </div>
 </div>
 
-<!-- ══════════════════ SUBSECCIÓN: PROTECCIÓN ══════════════════ -->
-<h3 class="subsection-title">🛡️ Protección y durabilidad</h3>
+</div><!-- /panel rendimiento -->
+
+<!-- ── PANEL: PROTECCIÓN ── -->
+<div class="tab-pane fade" id="hw-proteccion" role="tabpanel" aria-labelledby="hw-tab-proteccion">
 <div class="row g-3">
     <div class="col-md-6">
         <div class="feature-card card p-3" data-video="antigolpes.mp4">
@@ -356,8 +376,10 @@
     </div>
 </div>
 
-<!-- ══════════════════ SUBSECCIÓN: CONECTIVIDAD ══════════════════ -->
-<h3 class="subsection-title">🌐 Conectividad</h3>
+</div><!-- /panel proteccion -->
+
+<!-- ── PANEL: CONECTIVIDAD ── -->
+<div class="tab-pane fade" id="hw-conectividad" role="tabpanel" aria-labelledby="hw-tab-conectividad">
 <div class="row g-3">
     <div class="col-md-6">
         <div class="feature-card card p-3" data-video="conectividad.mp4">
@@ -444,8 +466,10 @@
     </div>
 </div>
 
-<!-- ══════════════════ SUBSECCIÓN: AUDIO Y VIDEO ══════════════════ -->
-<h3 class="subsection-title">🔊 Audio y video</h3>
+</div><!-- /panel conectividad -->
+
+<!-- ── PANEL: AUDIO Y VIDEO ── -->
+<div class="tab-pane fade" id="hw-audio" role="tabpanel" aria-labelledby="hw-tab-audio">
 <div class="row g-3">
     <div class="col-md-6">
         <div class="feature-card card p-3" data-video="audio.mp4">
@@ -508,7 +532,11 @@
     </div>
 </div>
 
-<!-- Enlaces / Ficha técnica -->
+</div><!-- /panel audio -->
+
+</div><!-- /tab-content -->
+
+<!-- Enlaces / Ficha técnica (visible bajo cualquier tab) -->
 <h3 class="subsection-title">🔗 Más información técnica</h3>
 <div class="row g-3 mb-2">
     <div class="col-md-4">
