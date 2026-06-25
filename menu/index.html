@@ -61,10 +61,11 @@
       width: min(960px, 96vw);
       border-radius: 10px;
       box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-      overflow: hidden;
+      overflow: visible;
     }
     .device-img {
       width: 100%; height: auto; display: block;
+      border-radius: 10px;
       user-select: none; -webkit-user-drag: none;
     }
 
@@ -443,6 +444,35 @@
     .bt-meta{flex:1}
     .bt-name{font-size:12px;font-weight:500;color:#222}
     .bt-detail{font-size:10px;color:#888;margin-top:2px}
+
+    /* ===== Pines de características (hardware) sobre el marco ===== */
+    .hero-pins{position:absolute;inset:0;z-index:60;pointer-events:none}
+    .pin-wrap{position:absolute;transform:translate(-50%,-50%);pointer-events:auto}
+    .pin{
+      width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.95);
+      background:rgba(59,130,246,.9);padding:0;cursor:none;position:relative;z-index:2;
+      box-shadow:0 0 0 2px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.45);
+      animation:pinpulse 2.2s infinite;
+    }
+    .pin::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:2px solid rgba(59,130,246,.55);animation:pinring 2.2s infinite}
+    @keyframes pinpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+    @keyframes pinring{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.4);opacity:0}}
+    .pin-wrap.open .pin{background:#2563eb;animation:none}
+    .pin-wrap.open .pin::after{animation:none;opacity:0}
+    .pin-popup{
+      position:absolute;width:212px;background:#fff;color:#1f2a44;border-radius:11px;
+      padding:11px 13px;box-shadow:0 14px 36px rgba(0,0,0,.32);
+      opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s;z-index:3;pointer-events:none;
+    }
+    .pin-wrap.open .pin-popup{opacity:1;visibility:visible;pointer-events:auto}
+    .pin-popup__title{font-size:13px;font-weight:700;margin-bottom:4px}
+    .pin-popup__desc{font-size:11px;color:#566;line-height:1.45}
+    .pp-down{top:20px;left:50%;transform:translateX(-50%)}
+    .pp-up{bottom:20px;left:50%;transform:translateX(-50%)}
+    .pp-left{right:22px;top:50%;transform:translateY(-50%)}
+    .pp-ur{bottom:20px;left:-4px}
+    .pp-ul{bottom:20px;right:-4px}
+    .pp-dr{top:20px;left:-4px}
   </style>
 </head>
 <body>
@@ -597,6 +627,46 @@
       <button class="flow-hotspot" data-label="OK" style="left:55.4%;top:93.1%;width:7.6%;height:9.0%" onclick="resetFlow()"></button>
     </div>
 
+  </div>
+
+  <!-- Pines de características (hardware) sobre el marco del panel -->
+  <div class="hero-pins">
+    <div class="pin-wrap" id="pinw-cam" style="left:50%;top:2.4%">
+      <button class="pin" type="button" onclick="togglePin('cam')" aria-label="Cámara 4K ePTZ"></button>
+      <div class="pin-popup pp-down"><div class="pin-popup__title">Cámara 4K ePTZ</div><div class="pin-popup__desc">Resolución 4K con seguimiento automático — sigue al docente.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-mic" style="left:40%;top:2.4%">
+      <button class="pin" type="button" onclick="togglePin('mic')" aria-label="Arreglo de 8 micrófonos"></button>
+      <div class="pin-popup pp-down"><div class="pin-popup__title">Arreglo de 8 micrófonos</div><div class="pin-popup__desc">Para búsquedas o dictados en el aula. Cancelación de ruido por hardware.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-anti" style="left:13%;top:15%">
+      <button class="pin" type="button" onclick="togglePin('anti')" aria-label="Antirayaduras y antigolpes"></button>
+      <div class="pin-popup pp-dr"><div class="pin-popup__title">Antirayaduras y antigolpes</div><div class="pin-popup__desc">Vidrio de seguridad 7H resistente a rayones y antigolpes IK7 frente a golpes del aula.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-air" style="left:96.3%;top:26%">
+      <button class="pin" type="button" onclick="togglePin('air')" aria-label="Sensor de calidad de aire"></button>
+      <div class="pin-popup pp-left"><div class="pin-popup__title">Sensor de calidad de aire</div><div class="pin-popup__desc">Mide CO₂, micropartículas, temperatura y humedad en tiempo real para un aula saludable.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-fp" style="left:5%;top:97.6%">
+      <button class="pin" type="button" onclick="togglePin('fp')" aria-label="Lector de huella digital"></button>
+      <div class="pin-popup pp-ur"><div class="pin-popup__title">Lector de huella digital</div><div class="pin-popup__desc">Acceso seguro de docentes — cada uno con sus cuentas, archivos y configuraciones separadas.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-nfc" style="left:12%;top:97.6%">
+      <button class="pin" type="button" onclick="togglePin('nfc')" aria-label="Lector NFC"></button>
+      <div class="pin-popup pp-ur"><div class="pin-popup__title">Lector NFC</div><div class="pin-popup__desc">Acerca tu tarjeta para gestionar tu cuenta o bloquear y desbloquear el equipo.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-speaker" style="left:23%;top:97.6%">
+      <button class="pin" type="button" onclick="togglePin('speaker')" aria-label="Parlantes estéreo"></button>
+      <div class="pin-popup pp-up"><div class="pin-popup__title">Parlantes estéreo 2×20W</div><div class="pin-popup__desc">Audio potente en toda el aula, sin parlantes externos.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-wifi" style="left:78%;top:97.6%">
+      <button class="pin" type="button" onclick="togglePin('wifi')" aria-label="WIFI 6 dual band"></button>
+      <div class="pin-popup pp-up"><div class="pin-popup__title">WIFI 6 dual band</div><div class="pin-popup__desc">Conexión inalámbrica de última generación. Hasta 3× más rápida que WIFI 5.</div></div>
+    </div>
+    <div class="pin-wrap" id="pinw-bt" style="left:88%;top:97.6%">
+      <button class="pin" type="button" onclick="togglePin('bt')" aria-label="Bluetooth 5.2"></button>
+      <div class="pin-popup pp-ul"><div class="pin-popup__title">Bluetooth 5.2</div><div class="pin-popup__desc">Mayor distancia, menor consumo y audio de baja latencia para periféricos.</div></div>
+    </div>
   </div>
 </div>
 
@@ -944,6 +1014,20 @@
     if (p) {
       document.getElementById('page-title').textContent = p.title;
       document.getElementById('page-body').innerHTML = p.html;
+    }
+  });
+
+  // Pines de características: abrir/cerrar popup (uno a la vez)
+  function togglePin(id) {
+    var w = document.getElementById('pinw-' + id);
+    var open = document.querySelector('.pin-wrap.open');
+    if (open && open !== w) open.classList.remove('open');
+    if (w) w.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    if (!(e.target.closest && e.target.closest('.pin-wrap'))) {
+      var o = document.querySelector('.pin-wrap.open');
+      if (o) o.classList.remove('open');
     }
   });
 </script>
