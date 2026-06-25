@@ -418,29 +418,68 @@ Tu navegador no soporta video HTML5.
             }
         }
         
+        // Detecta un ID de YouTube en una URL (youtu.be, watch?v=, embed, shorts)
+        function getYouTubeId(url) {
+            if (!url) return null;
+            const m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+            return m ? m[1] : null;
+        }
+        function clearColumnYt() { const e = document.getElementById('yt-iframe'); if (e) e.remove(); }
+        function clearModalYt()  { const e = document.getElementById('modal-yt-iframe'); if (e) e.remove(); }
+        function ytEmbed(id) { return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`; }
+
         // Manejo de videos
         function playVideo(videoPath) {
-            // Añadir ruta de videos si no está presente
-            const fullVideoPath = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
-            
+            const ytId = getYouTubeId(videoPath);
+
             if (window.innerWidth <= 767) {
                 // Mobile: usar modal
-                modalVideoSource.src = fullVideoPath;
-                modalVideoPlayer.load();
+                const modalBody = document.querySelector('#videoModal .modal-body');
+                clearModalYt();
+                if (ytId) {
+                    modalVideoPlayer.style.display = 'none';
+                    const f = document.createElement('iframe');
+                    f.id = 'modal-yt-iframe';
+                    f.src = ytEmbed(ytId);
+                    f.allow = 'autoplay; encrypted-media; fullscreen';
+                    f.allowFullscreen = true;
+                    f.style.cssText = 'width:100%;height:100%;border:0;';
+                    modalBody.appendChild(f);
+                } else {
+                    modalVideoPlayer.style.display = '';
+                    modalVideoSource.src = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
+                    modalVideoPlayer.load();
+                }
                 const modal = new bootstrap.Modal(document.getElementById('videoModal'));
                 modal.show();
             } else {
                 // Desktop/Tablet: usar columna lateral
-                videoSource.src = fullVideoPath;
-                videoPlayer.load();
-                videoColumn.classList.add('show');
-                videoPlayer.play().catch(e => console.log('Autoplay blocked'));
+                clearColumnYt();
+                if (ytId) {
+                    videoPlayer.style.display = 'none';
+                    const f = document.createElement('iframe');
+                    f.id = 'yt-iframe';
+                    f.src = ytEmbed(ytId);
+                    f.allow = 'autoplay; encrypted-media; fullscreen';
+                    f.allowFullscreen = true;
+                    f.style.cssText = 'width:100%;height:100%;border:0;';
+                    videoColumn.appendChild(f);
+                    videoColumn.classList.add('show');
+                } else {
+                    videoPlayer.style.display = '';
+                    videoSource.src = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
+                    videoPlayer.load();
+                    videoColumn.classList.add('show');
+                    videoPlayer.play().catch(e => console.log('Autoplay blocked'));
+                }
             }
         }
-        
+
         // Cerrar video
         function closeVideo() {
             videoColumn.classList.remove('show');
+            clearColumnYt();
+            videoPlayer.style.display = '';
             videoPlayer.pause();
             videoSource.src = '';
             // Reset mute button when closing
@@ -502,7 +541,15 @@ Tu navegador no soporta video HTML5.
         
         // Mute/unmute video
         muteVideoBtn.addEventListener('click', toggleMute);
-        
+
+        // Al cerrar el modal: detener YouTube y el video mp4
+        document.getElementById('videoModal').addEventListener('hidden.bs.modal', function() {
+            clearModalYt();
+            modalVideoPlayer.style.display = '';
+            modalVideoPlayer.pause();
+            modalVideoSource.src = '';
+        });
+
         // Pantalla completa
         function setupFullscreen(elementId) {
             const element = document.getElementById(elementId);
