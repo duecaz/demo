@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DMS — Consola de gestión eduPRO</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#eef2f7; --panel:#ffffff; --ink:#1f2a44; --muted:#7c8aa5;
+    --line:#e7ecf3; --blue:#3b82f6; --blue2:#60a5fa; --green:#16a34a;
+    --greenbg:#dcfce7; --orange:#f59e0b; --red:#ef4444; --navy:#1c2030;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Roboto',system-ui,sans-serif;font-size:13px}
+  .app{display:flex;min-height:100vh}
+
+  /* ---- Sidebar ---- */
+  .side{width:240px;flex-shrink:0;background:var(--navy);color:#cdd5e6;padding:14px 12px;display:flex;flex-direction:column;gap:2px}
+  .side-sec{font-size:10px;letter-spacing:1px;color:#5e6781;margin:14px 10px 6px;font-weight:700}
+  .side-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;color:#aab4cc;cursor:pointer;transition:background .15s,color .15s}
+  .side-item i{width:18px;text-align:center;font-size:15px}
+  .side-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .side-item.active{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(59,130,246,.4)}
+
+  /* ---- Main ---- */
+  .main{flex:1;padding:20px 22px;overflow:auto}
+  .grid{display:grid;gap:16px}
+  .cards-top{grid-template-columns:repeat(4,1fr);margin-bottom:16px}
+  .mid{grid-template-columns:2fr 1fr;margin-bottom:16px}
+  .mid-right{display:flex;flex-direction:column;gap:16px}
+  .bottom{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:1100px){.cards-top{grid-template-columns:repeat(2,1fr)}.mid{grid-template-columns:1fr}.bottom{grid-template-columns:1fr}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .phead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .ptitle{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700}
+  .ptitle .ico{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:#eef3ff;color:var(--blue);font-size:13px}
+  .psub{font-size:11px;color:var(--muted)}
+
+  /* ---- Stat cards ---- */
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .stat-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#eef3ff;color:var(--blue);font-size:16px}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .badge.green{background:var(--greenbg);color:#15803d}
+  .badge.blue{background:#dbeafe;color:#1d4ed8}
+  .badge.orange{background:#fef3c7;color:#b45309}
+  .stat-num{font-size:26px;font-weight:800;letter-spacing:.3px}
+  .stat-num small{font-size:12px;font-weight:600;color:var(--muted);margin-left:5px}
+  .stat-foot{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  /* ---- Resource bars ---- */
+  .res-row{margin-bottom:16px}
+  .res-row:last-child{margin-bottom:0}
+  .res-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .res-name{font-weight:600}
+  .res-meta{font-size:11.5px;color:var(--muted)}
+  .res-meta b{color:var(--ink)}
+  .track{height:8px;border-radius:6px;background:#eef2f7;overflow:hidden}
+  .fill{height:100%;border-radius:6px}
+  .fill.o{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+  .fill.r{background:linear-gradient(90deg,#fb7185,#ef4444)}
+  .fill.b{background:linear-gradient(90deg,#60a5fa,#3b82f6)}
+
+  /* ---- Bar chart ---- */
+  .chart{display:flex;align-items:flex-end;gap:10px;height:170px;padding-left:30px;position:relative}
+  .chart .yax{position:absolute;left:0;top:0;bottom:18px;width:26px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:var(--muted)}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .bar{width:60%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#60a5fa,#3b82f6)}
+  .bar-x{font-size:9.5px;color:var(--muted)}
+
+  /* ---- Map ---- */
+  .map-wrap{position:relative;height:380px;background:linear-gradient(160deg,#f3f7fc,#e9eff7);border-radius:10px;overflow:hidden}
+  .map-svg{position:absolute;inset:0;width:100%;height:100%}
+  .dot{fill:var(--blue)}
+  .dot.off{fill:#c4cdda}
+  .city-lbl{font-size:10px;fill:#42506a;font-weight:600}
+  .map-zoom{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px}
+  .map-zoom button{width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:7px;color:#586a86;font-size:13px;cursor:pointer}
+  .legend{position:absolute;left:14px;bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:10.5px}
+  .legend-h{font-size:9px;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .legend-row{display:flex;align-items:center;gap:7px;margin-top:3px}
+  .ldot{width:8px;height:8px;border-radius:50%}
+
+  /* ---- Ranking lists ---- */
+  .rank{display:flex;align-items:center;gap:11px;padding:9px 0}
+  .rank .n{font-weight:800;font-size:12px;min-width:18px}
+  .rank .body{flex:1}
+  .rank .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+  .rank .name{font-weight:600}
+  .rank .val{font-weight:700}
+  .rbar{height:5px;border-radius:4px;background:#eef2f7;overflow:hidden}
+  .rbar span{display:block;height:100%;border-radius:4px}
+  .c1{color:var(--blue)} .c2{color:var(--red)} .c3{color:var(--orange)} .c4{color:#94a3b8} .c5{color:#94a3b8}
+  .b1{background:var(--blue)} .b2{background:var(--red)} .b3{background:var(--orange)} .b4{background:#cbd5e1} .b5{background:#cbd5e1}
+
+  /* ---- Command table ---- */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:10px;letter-spacing:.6px;color:var(--muted);font-weight:700;padding:0 0 8px}
+  th.r,td.r{text-align:right}
+  td{padding:11px 0;border-top:1px solid var(--line);font-size:12.5px}
+  td .num{font-weight:800;color:var(--blue);margin-right:10px}
+  td .v{font-weight:700}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="side">
+    <div class="side-sec">GENERAL</div>
+    <div class="side-item active"><i class="fas fa-house"></i> Página principal</div>
+    <div class="side-item"><i class="fas fa-table-cells-large"></i> Gestión de cuentas</div>
+    <div class="side-item"><i class="fas fa-wand-magic-sparkles"></i> Generación IA</div>
+    <div class="side-item"><i class="fas fa-desktop"></i> Gestión de dispositivos</div>
+    <div class="side-item"><i class="fas fa-layer-group"></i> Gestión de grupos</div>
+    <div class="side-item"><i class="fas fa-gear"></i> Gestión de firmware</div>
+    <div class="side-item"><i class="fas fa-grip"></i> Gestión de aplicaciones</div>
+    <div class="side-item"><i class="fas fa-folder"></i> Gestión de recursos</div>
+    <div class="side-item"><i class="fas fa-database"></i> Gestión de almacenamiento</div>
+    <div class="side-sec">SISTEMA</div>
+    <div class="side-item"><i class="fas fa-language"></i> Idioma</div>
+    <div class="side-item"><i class="fas fa-user"></i> Centro personal</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Stat cards -->
+    <div class="grid cards-top">
+      <div class="stat">
+        <div class="stat-top"><div class="stat-ico"><i class="fas fa-user"></i></div><span class="badge green">▲ 95%</span></div>
+        <div class="stat-num">87 <small>en línea</small></div>
+        <div class="stat-foot">Usuarios · 92 totales</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div class="stat-ico"><i class="fas fa-desktop"></i></div><span class="badge blue">82% activos</span></div>
+        <div class="stat-num">843 <small>en línea</small></div>
+        <div class="stat-foot">Dispositivos · 1 024 totales</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div class="stat-ico" style="background:#fef3c7;color:#d97706"><i class="fas fa-gear"></i></div><span class="badge orange">8 núcleos</span></div>
+        <div class="stat-num">52% <small>CPU</small></div>
+        <div class="stat-foot">16 GB RAM · 256 GB SSD</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div class="stat-ico"><i class="fas fa-terminal"></i></div><span class="badge green">▲ +18%</span></div>
+        <div class="stat-num">1 240 <small>hoy</small></div>
+        <div class="stat-foot">Comandos ejecutados</div>
+      </div>
+    </div>
+
+    <!-- Map + right column -->
+    <div class="grid mid">
+      <div class="panel">
+        <div class="phead">
+          <div class="ptitle"><span class="ico"><i class="fas fa-location-dot"></i></span> Ubicación de dispositivos · Perú</div>
+          <span class="badge green"><i class="fas fa-circle" style="font-size:7px;vertical-align:middle"></i> 843 en línea</span>
+        </div>
+        <div class="map-wrap">
+          <svg class="map-svg" viewBox="0 0 500 380" preserveAspectRatio="xMidYMid meet">
+            <path d="M150 30 L205 55 L235 50 L255 80 L300 95 L325 120 L355 150 L345 185 L360 215 L330 255 L300 270 L285 305 L255 345 L235 360 L215 320 L200 300 L160 280 L150 250 L120 215 L130 180 L120 150 L140 110 L135 70 Z"
+                  fill="#cdddf2" stroke="#9cc0e8" stroke-width="1.5" opacity=".75"/>
+            <circle cx="175" cy="160" r="22" fill="#bcd4f0" opacity=".55"/>
+            <!-- dots en línea -->
+            <g class="dot">
+              <circle cx="178" cy="150" r="4.5"/><circle cx="165" cy="168" r="5.5"/><circle cx="188" cy="172" r="3.5"/>
+              <circle cx="160" cy="140" r="3.5"/><circle cx="200" cy="135" r="4"/><circle cx="210" cy="120" r="3.5"/>
+              <circle cx="220" cy="150" r="3"/><circle cx="195" cy="190" r="4"/><circle cx="172" cy="195" r="3.5"/>
+              <circle cx="240" cy="115" r="3"/><circle cx="258" cy="135" r="4"/><circle cx="275" cy="160" r="3"/>
+              <circle cx="300" cy="170" r="4.5"/><circle cx="288" cy="195" r="3"/><circle cx="262" cy="200" r="3.5"/>
+              <circle cx="250" cy="240" r="4"/><circle cx="278" cy="245" r="3.5"/><circle cx="300" cy="225" r="3"/>
+              <circle cx="235" cy="300" r="4"/><circle cx="250" cy="320" r="4.5"/><circle cx="225" cy="285" r="3"/>
+              <circle cx="205" cy="160" r="3"/><circle cx="215" cy="180" r="3.5"/><circle cx="185" cy="128" r="3"/>
+              <circle cx="320" cy="150" r="3"/><circle cx="232" cy="128" r="2.6"/><circle cx="168" cy="120" r="2.6"/>
+            </g>
+            <!-- dots sin conexión -->
+            <g class="dot off">
+              <circle cx="210" cy="205" r="3"/><circle cx="190" cy="220" r="3.5"/><circle cx="270" cy="220" r="3"/>
+              <circle cx="300" cy="250" r="3.5"/><circle cx="245" cy="265" r="3"/><circle cx="225" cy="240" r="2.6"/>
+              <circle cx="150" cy="180" r="2.6"/><circle cx="320" cy="200" r="3"/><circle cx="260" cy="160" r="2.6"/>
+              <circle cx="240" cy="340" r="3"/>
+            </g>
+            <!-- ciudades -->
+            <g>
+              <circle cx="165" cy="168" r="3" fill="#2563eb"/><text class="city-lbl" x="150" y="158">Lima</text>
+              <text class="city-lbl" x="195" y="120">Trujillo</text>
+              <text class="city-lbl" x="312" y="142">Iquitos</text>
+              <text class="city-lbl" x="282" y="218">Cusco</text>
+              <text class="city-lbl" x="218" y="312">Arequipa</text>
+            </g>
+          </svg>
+          <div class="map-zoom"><button>+</button><button>−</button><button><i class="fas fa-rotate-left" style="font-size:11px"></i></button></div>
+          <div class="legend">
+            <div class="legend-h">ESTADO</div>
+            <div class="legend-row"><span class="ldot" style="background:var(--blue)"></span> En línea</div>
+            <div class="legend-row"><span class="ldot" style="background:#c4cdda"></span> Sin conexión</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid-right">
+        <div class="panel">
+          <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-gauge-high"></i></span> Recursos del sistema</div></div>
+          <div class="res-row">
+            <div class="res-head"><span class="res-name">CPU</span><span class="res-meta">8 núcleos · <b style="color:#d97706">52%</b></span></div>
+            <div class="track"><div class="fill o" style="width:52%"></div></div>
+          </div>
+          <div class="res-row">
+            <div class="res-head"><span class="res-name">Memoria</span><span class="res-meta">11.2 / 16 GB · <b style="color:#dc2626">70%</b></span></div>
+            <div class="track"><div class="fill r" style="width:70%"></div></div>
+          </div>
+          <div class="res-row">
+            <div class="res-head"><span class="res-name">Almacenamiento SSD</span><span class="res-meta">142 / 256 GB · <b style="color:#2563eb">55%</b></span></div>
+            <div class="track"><div class="fill b" style="width:55%"></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-clock"></i></span> Periodo de uso del día</div><span class="psub">Últimos 30 días</span></div>
+          <div class="chart">
+            <div class="yax"><span>250</span><span>150</span><span>50</span></div>
+            <div class="bar-col"><div class="bar" style="height:92%"></div><span class="bar-x">0-3</span></div>
+            <div class="bar-col"><div class="bar" style="height:84%"></div><span class="bar-x">3-6</span></div>
+            <div class="bar-col"><div class="bar" style="height:66%"></div><span class="bar-x">6-9</span></div>
+            <div class="bar-col"><div class="bar" style="height:48%"></div><span class="bar-x">9-12</span></div>
+            <div class="bar-col"><div class="bar" style="height:38%"></div><span class="bar-x">12-15</span></div>
+            <div class="bar-col"><div class="bar" style="height:32%"></div><span class="bar-x">15-18</span></div>
+            <div class="bar-col"><div class="bar" style="height:80%"></div><span class="bar-x">18-21</span></div>
+            <div class="bar-col"><div class="bar" style="height:94%"></div><span class="bar-x">21-24</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="grid bottom">
+      <div class="panel">
+        <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-city"></i></span> Ciudades con más dispositivos</div><span class="psub">Top 6</span></div>
+        <div class="rank"><span class="n c1">01</span><div class="body"><div class="top"><span class="name">Lima</span><span class="val">612</span></div><div class="rbar"><span class="b1" style="width:100%"></span></div></div></div>
+        <div class="rank"><span class="n c2">02</span><div class="body"><div class="top"><span class="name">Arequipa</span><span class="val">74</span></div><div class="rbar"><span class="b2" style="width:24%"></span></div></div></div>
+        <div class="rank"><span class="n c3">03</span><div class="body"><div class="top"><span class="name">Trujillo</span><span class="val">58</span></div><div class="rbar"><span class="b3" style="width:19%"></span></div></div></div>
+        <div class="rank"><span class="n c4">04</span><div class="body"><div class="top"><span class="name">Cusco</span><span class="val">41</span></div><div class="rbar"><span class="b4" style="width:13%"></span></div></div></div>
+        <div class="rank"><span class="n c5">05</span><div class="body"><div class="top"><span class="name">Callao</span><span class="val">33</span></div><div class="rbar"><span class="b5" style="width:11%"></span></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-terminal"></i></span> Comandos más usados</div><span class="psub">Últimos 30 días</span></div>
+        <table>
+          <thead><tr><th style="width:30px">#</th><th>OPERACIÓN</th><th class="r">VECES</th></tr></thead>
+          <tbody>
+            <tr><td><span class="num">01</span></td><td>Captura de pantalla</td><td class="r"><span class="v">1 240</span></td></tr>
+            <tr><td><span class="num">02</span></td><td>Reiniciar</td><td class="r"><span class="v">860</span></td></tr>
+            <tr><td><span class="num">03</span></td><td>Bloquear pantalla</td><td class="r"><span class="v">540</span></td></tr>
+            <tr><td><span class="num">04</span></td><td>Despertar por LAN</td><td class="r"><span class="v">410</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-chart-simple"></i></span> Más días en línea</div><span class="psub">Último año</span></div>
+        <div class="rank"><span class="n c1">01</span><div class="body"><div class="top"><span class="name">A4:7B:E2:09:5C:18</span><span class="val">322 h</span></div><div class="rbar"><span class="b1" style="width:100%"></span></div></div></div>
+        <div class="rank"><span class="n c2">02</span><div class="body"><div class="top"><span class="name">6F:11:D3:8A:42:B0</span><span class="val">298 h</span></div><div class="rbar"><span class="b2" style="width:92%"></span></div></div></div>
+        <div class="rank"><span class="n c3">03</span><div class="body"><div class="top"><span class="name">C8:3D:90:5E:7A:21</span><span class="val">271 h</span></div><div class="rbar"><span class="b3" style="width:84%"></span></div></div></div>
+        <div class="rank"><span class="n c4">04</span><div class="body"><div class="top"><span class="name">2E:88:F4:1B:6C:99</span><span class="val">254 h</span></div><div class="rbar"><span class="b4" style="width:79%"></span></div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
