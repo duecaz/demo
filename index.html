@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EDUBOARD PRO</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 160px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 100vh;
+        }
+        
+        .nav-item {
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active {
+            background: rgba(0, 123, 255, 0.8);
+            box-shadow: 0 2px 10px rgba(0, 123, 255, 0.3);
+        }
+        
+        /* Reducir tamaños de fuente y padding globalmente */
+        .content-area {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            min-height: 100vh;
+            max-width: 80%;
+            font-size: 0.875rem; /* Reducir texto base de 1rem a 0.875rem */
+        }
+        
+        .content-area h1 {
+            font-size: 2rem; /* Reducir de ~2.5rem a 2rem */
+        }
+        
+        .content-area h3 {
+            font-size: 1.5rem; /* Reducir de ~1.75rem a 1.5rem */
+        }
+        
+        .content-area h5 {
+            font-size: 1.125rem; /* Reducir de ~1.25rem a 1.125rem */
+        }
+        
+        .content-area .lead {
+            font-size: 1.125rem; /* Reducir de ~1.25rem a 1.125rem */
+        }
+        
+        .content-area .fs-4 {
+            font-size: 1.25rem; /* Reducir de ~1.5rem a 1.25rem */
+        }
+        
+        @media (max-width: 991px) {
+            .content-area {
+                max-width: 100%;
+                font-size: 1rem; /* Mantener tamaño normal en mobile */
+            }
+            
+            .content-area h1 { font-size: 2.5rem; }
+            .content-area h3 { font-size: 1.75rem; }
+            .content-area h5 { font-size: 1.25rem; }
+            .content-area .lead { font-size: 1.25rem; }
+            .content-area .fs-4 { font-size: 1.5rem; }
+        }
+        
+        .video-column {
+            width: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+            background: #000;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .video-column.show {
+            width: calc(100vh * 9 / 16);
+            opacity: 1;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100vh;
+            object-fit: cover;
+        }
+        
+        .video-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .close-video, .mute-video {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        
+        .close-video:hover, .mute-video:hover {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+        }
+        
+        .mute-video.muted {
+            background: rgba(220, 53, 69, 0.8);
+        }
+        
+        /* Cards mejoradas */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .highlight {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        /* Mobile: Menu superior */
+        @media (max-width: 767px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                height: 70px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .nav-item {
+                min-width: 50px;
+                flex: 0 0 auto;
+            }
+            
+            .nav-text {
+                display: none;
+            }
+            
+            .nav-item i {
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+            
+            .video-column.show {
+                width: 100%;
+                height: 70vh;
+            }
+            
+            .content-area {
+                min-height: auto;
+            }
+        }
+        
+        /* Tablet: Iconos con texto inline */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .sidebar {
+                width: 120px;
+            }
+            
+            .nav-item {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                text-align: left;
+                padding: 8px 12px;
+            }
+            
+            .nav-item i {
+                font-size: 1rem;
+                margin-right: 8px;
+                margin-bottom: 0;
+                width: 16px;
+            }
+            
+            .nav-text {
+                font-size: 11px;
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+<body class="text-white bg-dark">
+<div class="d-flex flex-column flex-md-row">
+<!-- Sidebar -->
+<nav class="sidebar p-2 flex-shrink-0 bg-dark">
+<div class="d-flex flex-column h-100">
+<!-- Desktop: Vertical completo -->
+<div class="d-none d-lg-flex flex-column flex-fill">
+<div class="nav-item text-center py-3 px-4 mb-1 active" data-page="home">
+<i class="fas fa-home fa-xl mb-2"></i>
+<div class="nav-text small">Home</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="rendimiento">
+<i class="fas fa-tachometer-alt fa-xl mb-2"></i>
+<div class="nav-text small">Rendimiento</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="perfiles">
+<i class="fas fa-fingerprint fa-xl mb-2"></i>
+<div class="nav-text small">Perfiles</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="ia">
+<i class="fas fa-brain fa-xl mb-2"></i>
+<div class="nav-text small">IA</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="pizarra">
+<i class="fas fa-chalkboard fa-xl mb-2"></i>
+<div class="nav-text small">Pizarra</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="audio">
+<i class="fas fa-volume-up fa-xl mb-2"></i>
+<div class="nav-text small">Audio</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="conectividad">
+<i class="fas fa-wifi fa-xl mb-2"></i>
+<div class="nav-text small">Conectividad</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" data-page="mas">
+<i class="fas fa-ellipsis-h fa-xl mb-2"></i>
+<div class="nav-text small">Más</div>
+</div>
+<div class="nav-item text-center py-3 px-4 mb-1" id="fullscreen-toggle">
+<i class="fas fa-expand fa-xl mb-2"></i>
+</div>
+</div>
+<!-- Tablet: Horizontal inline -->
+<div class="d-none d-md-flex d-lg-none flex-column flex-fill">
+<div class="nav-item py-2 px-3 mb-1 active" data-page="home">
+<i class="fas fa-home"></i>
+<span class="nav-text ms-2">Home</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="rendimiento">
+<i class="fas fa-tachometer-alt"></i>
+<span class="nav-text ms-2">Rendimiento</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="perfiles">
+<i class="fas fa-fingerprint"></i>
+<span class="nav-text ms-2">Perfiles</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="ia">
+<i class="fas fa-brain"></i>
+<span class="nav-text ms-2">IA</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="pizarra">
+<i class="fas fa-chalkboard"></i>
+<span class="nav-text ms-2">Pizarra</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="audio">
+<i class="fas fa-volume-up"></i>
+<span class="nav-text ms-2">Audio</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="conectividad">
+<i class="fas fa-wifi"></i>
+<span class="nav-text ms-2">Conectividad</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" data-page="mas">
+<i class="fas fa-ellipsis-h"></i>
+<span class="nav-text ms-2">Más</span>
+</div>
+<div class="nav-item py-2 px-3 mb-1" id="fullscreen-toggle-tablet">
+<i class="fas fa-expand"></i>
+<span class="nav-text ms-2">Pantalla</span>
+</div>
+</div>
+<!-- Mobile: Horizontal compacto -->
+<div class="d-md-none d-flex flex-row overflow-auto py-2" style="-webkit-overflow-scrolling: touch;">
+<div class="nav-item text-center py-2 px-2 me-1 active" data-page="home">
+<i class="fas fa-home"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="rendimiento">
+<i class="fas fa-tachometer-alt"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="perfiles">
+<i class="fas fa-fingerprint"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="ia">
+<i class="fas fa-brain"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="pizarra">
+<i class="fas fa-chalkboard"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="audio">
+<i class="fas fa-volume-up"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="conectividad">
+<i class="fas fa-wifi"></i>
+</div>
+<div class="nav-item text-center py-2 px-2 me-1" data-page="mas">
+<i class="fas fa-ellipsis-h"></i>
+</div>
+<div class="nav-item text-center py-2 px-2" id="fullscreen-toggle-mobile">
+<i class="fas fa-expand"></i>
+</div>
+</div>
+</div>
+</nav>
+<!-- Área de contenido -->
+<div class="content-area flex-fill p-3 overflow-auto bg-dark text-white" id="content-area">
+<div class="d-flex align-items-center justify-content-center h-100">
+<div class="text-center">
+<i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+<br/>
+<span class="text-light">Cargando contenido...</span>
+</div>
+</div>
+</div>
+<!-- Columna de video (oculta por defecto) -->
+<div class="video-column flex-shrink-0 position-relative" id="video-column">
+<div class="video-controls position-absolute top-0 end-0 p-2" style="z-index: 10;">
+<button class="mute-video btn me-2" id="mute-video" style="background: rgba(0, 0, 0, 0.7); border: none; border-radius: 50%; width: 40px; height: 40px; color: white;">
+<i class="fas fa-volume-up"></i>
+</button>
+<button class="close-video btn" id="close-video">
+<i class="fas fa-times"></i>
+</button>
+</div>
+<video class="video-player w-100 h-100 object-fit-cover" controls="" id="video-player" loop="" muted="">
+<source id="video-source" src="" type="video/mp4"/>
+Tu navegador no soporta video HTML5.
+</video>
+</div>
+</div>
+<!-- Modal para mobile -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+<div class="modal-dialog modal-fullscreen">
+<div class="modal-content bg-dark">
+<div class="modal-header border-0">
+<h5 class="modal-title text-white">Video Demo</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal" type="button"></button>
+</div>
+<div class="modal-body p-0 d-flex align-items-center justify-content-center">
+<video class="w-100 h-100" controls="" id="modal-video-player" loop="" style="object-fit: contain;">
+<source id="modal-video-source" src="" type="video/mp4"/>
+</video>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        // Elementos principales
+        const contentArea = document.getElementById('content-area');
+        const videoColumn = document.getElementById('video-column');
+        const videoPlayer = document.getElementById('video-player');
+        const videoSource = document.getElementById('video-source');
+        const closeVideoBtn = document.getElementById('close-video');
+        const muteVideoBtn = document.getElementById('mute-video');
+        
+        // Modal elements
+        const modalVideoPlayer = document.getElementById('modal-video-player');
+        const modalVideoSource = document.getElementById('modal-video-source');
+        
+        // Páginas disponibles - ahora cargarán desde archivos externos
+        async function loadPage(pageName) {
+            try {
+                contentArea.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <br>
+                            <span class="text-light">Cargando ${pageName}...</span>
+                        </div>
+                    </div>
+                `;
+                
+                const response = await fetch(`${pageName}.html`);
+                if (response.ok) {
+                    const content = await response.text();
+                    contentArea.innerHTML = content;
+                    attachVideoListeners();
+                } else {
+                    throw new Error('Página no encontrada');
+                }
+            } catch (error) {
+                contentArea.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                        <h3>Página en construcción</h3>
+                        <p class="text-muted">La página "${pageName}" estará disponible próximamente.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Manejo de videos
+        function playVideo(videoPath) {
+            // Añadir ruta de videos si no está presente
+            const fullVideoPath = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
+            
+            if (window.innerWidth <= 767) {
+                // Mobile: usar modal
+                modalVideoSource.src = fullVideoPath;
+                modalVideoPlayer.load();
+                const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+                modal.show();
+            } else {
+                // Desktop/Tablet: usar columna lateral
+                videoSource.src = fullVideoPath;
+                videoPlayer.load();
+                videoColumn.classList.add('show');
+                videoPlayer.play().catch(e => console.log('Autoplay blocked'));
+            }
+        }
+        
+        // Cerrar video
+        function closeVideo() {
+            videoColumn.classList.remove('show');
+            videoPlayer.pause();
+            videoSource.src = '';
+            // Reset mute button when closing
+            videoPlayer.muted = true;
+            updateMuteButton();
+        }
+        
+        // Mute/unmute video
+        function toggleMute() {
+            videoPlayer.muted = !videoPlayer.muted;
+            updateMuteButton();
+        }
+        
+        // Update mute button appearance
+        function updateMuteButton() {
+            const icon = muteVideoBtn.querySelector('i');
+            if (videoPlayer.muted) {
+                icon.className = 'fas fa-volume-mute';
+                muteVideoBtn.classList.add('muted');
+                muteVideoBtn.title = 'Activar sonido';
+            } else {
+                icon.className = 'fas fa-volume-up';
+                muteVideoBtn.classList.remove('muted');
+                muteVideoBtn.title = 'Silenciar';
+            }
+        }
+        
+        // Attach listeners a cards de video
+        function attachVideoListeners() {
+            document.querySelectorAll('[data-video]').forEach(card => {
+                card.addEventListener('click', function() {
+                    const videoPath = this.getAttribute('data-video');
+                    if (videoPath) {
+                        playVideo(videoPath);
+                    }
+                });
+            });
+        }
+        
+        // Navegación del sidebar
+        document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remover active
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                
+                // Agregar active
+                const page = this.getAttribute('data-page');
+                document.querySelectorAll(`[data-page="${page}"]`).forEach(nav => {
+                    nav.classList.add('active');
+                });
+                
+                // Cargar página
+                loadPage(page);
+            });
+        });
+        
+        // Cerrar video
+        closeVideoBtn.addEventListener('click', closeVideo);
+        
+        // Mute/unmute video
+        muteVideoBtn.addEventListener('click', toggleMute);
+        
+        // Pantalla completa
+        function setupFullscreen(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.addEventListener('click', function() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
+                    }
+                });
+            }
+        }
+        
+        setupFullscreen('fullscreen-toggle');
+        setupFullscreen('fullscreen-toggle-tablet');
+        setupFullscreen('fullscreen-toggle-mobile');
+        
+        // Initialize mute button state and load initial page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateMuteButton();
+            loadPage('home');
+        });
+    </script>
+</body>
+</html>
