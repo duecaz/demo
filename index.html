@@ -448,11 +448,12 @@ Cerrar
                     </div>
                 `;
                 
-                const response = await fetch(`${pageName}.html`);
+                const response = await fetch(`${pageName}.html?v=${Date.now()}`, { cache: 'reload' });
                 if (response.ok) {
                     const content = await response.text();
                     contentArea.innerHTML = content;
                     attachVideoListeners();
+                    refreshEmbeds();
                 } else {
                     throw new Error('Página no encontrada');
                 }
@@ -549,7 +550,15 @@ Cerrar
                 });
             });
         }
-        
+
+        // Carga los iframes embebidos (menu/, dms/) siempre frescos, sin caché
+        function refreshEmbeds() {
+            document.querySelectorAll('iframe[data-src]').forEach(f => {
+                const base = f.getAttribute('data-src');
+                f.src = base + (base.includes('?') ? '&' : '?') + 't=' + Date.now();
+            });
+        }
+
         // Navegación del sidebar
         document.querySelectorAll('.nav-item[data-page]').forEach(item => {
             item.addEventListener('click', function() {
