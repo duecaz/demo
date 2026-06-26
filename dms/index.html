@@ -102,6 +102,45 @@
   td{padding:11px 0;border-top:1px solid var(--line);font-size:12.5px}
   td .num{font-weight:800;color:var(--blue);margin-right:10px}
   td .v{font-weight:700}
+
+  /* ---- Vistas ---- */
+  .view{display:none}
+  .view.active{display:block}
+
+  /* ---- Página: Gestión de dispositivos ---- */
+  .dev-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+  .dev-title{font-size:20px;font-weight:800}
+  .dev-sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .dev-sub b{color:var(--ink)}
+  .dev-layout{display:grid;grid-template-columns:210px 1fr;gap:16px}
+  @media(max-width:900px){.dev-layout{grid-template-columns:1fr}}
+  .dev-subnav{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;height:max-content}
+  .dev-subnav button{display:block;width:100%;text-align:left;padding:11px 14px;border:0;background:transparent;border-radius:9px;font-size:13px;color:#445;cursor:pointer;margin-bottom:2px}
+  .dev-subnav button:hover{background:#f1f5fb}
+  .dev-subnav button.active{background:#eef3ff;color:var(--blue);font-weight:700}
+  .dev-pane{display:none}
+  .dev-pane.active{display:block}
+
+  .ctrl-section{padding:16px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .ctrl-section:last-child{border-bottom:0;padding-bottom:0}
+  .ctrl-label{min-width:140px;font-weight:600;color:#334;padding-top:7px}
+  .ctrl-btns{display:flex;gap:10px;flex-wrap:wrap}
+  .cbtn{padding:8px 16px;border:1px solid var(--line);border-radius:7px;background:#fff;color:#334;font-size:13px;cursor:pointer;font-weight:500;transition:filter .12s}
+  .cbtn:hover{filter:brightness(.96)}
+  .cbtn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+  .cbtn.green{background:#22c55e;border-color:#22c55e;color:#fff}
+  .cbtn.grey{background:#9ca3af;border-color:#9ca3af;color:#fff}
+  .cbtn.orange{background:var(--orange);border-color:var(--orange);color:#fff}
+
+  .capture-frame{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#0b1020}
+  .capture-frame img{width:100%;display:block}
+  .capture-badge{position:absolute;top:12px;left:12px;background:rgba(239,68,68,.95);color:#fff;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;display:flex;align-items:center;gap:6px}
+  .capture-badge .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .app-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .app-chip{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);border-radius:20px;font-size:12px;background:#fff}
+  .app-chip i{color:var(--blue)}
+  .pane-empty{color:var(--muted);font-size:13px;text-align:center;padding:34px 0}
 </style>
 </head>
 <body>
@@ -110,10 +149,10 @@
   <!-- Sidebar -->
   <aside class="side">
     <div class="side-sec">GENERAL</div>
-    <div class="side-item active"><i class="fas fa-house"></i> Página principal</div>
+    <div class="side-item active" onclick="showView('home',this)"><i class="fas fa-house"></i> Página principal</div>
     <div class="side-item"><i class="fas fa-table-cells-large"></i> Gestión de cuentas</div>
     <div class="side-item"><i class="fas fa-wand-magic-sparkles"></i> Generación IA</div>
-    <div class="side-item"><i class="fas fa-desktop"></i> Gestión de dispositivos</div>
+    <div class="side-item" onclick="showView('devices',this)"><i class="fas fa-desktop"></i> Gestión de dispositivos</div>
     <div class="side-item"><i class="fas fa-layer-group"></i> Gestión de grupos</div>
     <div class="side-item"><i class="fas fa-gear"></i> Gestión de firmware</div>
     <div class="side-item"><i class="fas fa-grip"></i> Gestión de aplicaciones</div>
@@ -126,6 +165,9 @@
 
   <!-- Main -->
   <main class="main">
+
+  <!-- ===================== VISTA: PÁGINA PRINCIPAL ===================== -->
+  <div id="view-home" class="view active">
 
     <!-- Stat cards -->
     <div class="grid cards-top">
@@ -267,7 +309,125 @@
       </div>
     </div>
 
+  </div><!-- /view-home -->
+
+  <!-- ===================== VISTA: GESTIÓN DE DISPOSITIVOS ===================== -->
+  <div id="view-devices" class="view">
+    <div class="dev-head">
+      <div>
+        <div class="dev-title">Gestión de dispositivos</div>
+        <div class="dev-sub">Control remoto · <b>EDUBOARD-Aula-203</b> · A4:7B:E2:09:5C:18 · <span style="color:#16a34a">● En línea</span></div>
+      </div>
+      <span class="badge blue">843 dispositivos en línea</span>
+    </div>
+
+    <div class="dev-layout">
+      <!-- sub-navegación -->
+      <div class="dev-subnav">
+        <button class="active" onclick="devTab(this,'basic')">Control básico</button>
+        <button onclick="devTab(this,'upg')">Actualización</button>
+        <button onclick="devTab(this,'sys')">Ajustes del sistema</button>
+        <button onclick="devTab(this,'cmd')">Comandos personalizados</button>
+        <button onclick="devTab(this,'file')">Archivos</button>
+        <button onclick="devTab(this,'flow')">Flujos de trabajo</button>
+      </div>
+
+      <!-- contenido -->
+      <div>
+        <!-- Control básico -->
+        <div class="dev-pane active" id="pane-basic">
+          <div class="panel">
+            <div class="phead"><div class="ptitle"><span class="ico"><i class="fas fa-sliders"></i></span> Control básico</div></div>
+
+            <div class="ctrl-section">
+              <div class="ctrl-label"><i class="fas fa-bolt" style="color:#f59e0b"></i> Energía</div>
+              <div class="ctrl-btns">
+                <button class="cbtn">Apagar</button>
+                <button class="cbtn blue">Reiniciar</button>
+                <button class="cbtn green">Wake on LAN</button>
+                <button class="cbtn grey">Pantalla en reposo</button>
+                <button class="cbtn orange">Encender pantalla</button>
+                <button class="cbtn">Restablecer de fábrica</button>
+              </div>
+            </div>
+
+            <div class="ctrl-section">
+              <div class="ctrl-label"><i class="fas fa-desktop" style="color:#3b82f6"></i> Pantalla</div>
+              <div class="ctrl-btns">
+                <button class="cbtn">Bloquear</button>
+                <button class="cbtn blue">Desbloquear</button>
+                <button class="cbtn green">Bloqueo infantil</button>
+                <button class="cbtn blue">Captura de pantalla</button>
+                <button class="cbtn blue">Monitoreo en tiempo real</button>
+              </div>
+            </div>
+
+            <div class="ctrl-section">
+              <div class="ctrl-label"><i class="fas fa-envelope" style="color:#3b82f6"></i> Mensajes</div>
+              <div class="ctrl-btns">
+                <button class="cbtn">Gestión de alertas</button>
+                <button class="cbtn blue">Enviar notificación</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Captura de pantalla en vivo -->
+          <div class="panel" style="margin-top:16px">
+            <div class="phead">
+              <div class="ptitle"><span class="ico"><i class="fas fa-camera"></i></span> Captura de pantalla en vivo</div>
+              <span class="psub">EDUBOARD-Aula-203 · ahora</span>
+            </div>
+            <div class="capture-frame">
+              <span class="capture-badge"><span class="dot"></span> EN VIVO</span>
+              <img src="pantala_interactiva.webp" alt="Contenido actual de la pantalla del dispositivo">
+            </div>
+          </div>
+
+          <!-- Aplicaciones instaladas -->
+          <div class="panel" style="margin-top:16px">
+            <div class="phead">
+              <div class="ptitle"><span class="ico"><i class="fas fa-grip"></i></span> Aplicaciones instaladas</div>
+              <span class="psub">5 apps</span>
+            </div>
+            <div class="app-chips">
+              <span class="app-chip"><i class="fab fa-chrome"></i> Chrome</span>
+              <span class="app-chip"><i class="fab fa-google-play"></i> Play Store</span>
+              <span class="app-chip"><i class="fas fa-file-word"></i> WPS Office</span>
+              <span class="app-chip"><i class="fas fa-chalkboard"></i> Pizarra Eduboard</span>
+              <span class="app-chip"><i class="fas fa-graduation-cap"></i> Classroom</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Otras sub-secciones (ejemplo) -->
+        <div class="dev-pane" id="pane-upg"><div class="panel"><div class="pane-empty"><i class="fas fa-rotate fa-2x" style="color:#cbd5e1"></i><br><br>Actualización de firmware remota — sección de ejemplo.</div></div></div>
+        <div class="dev-pane" id="pane-sys"><div class="panel"><div class="pane-empty"><i class="fas fa-gear fa-2x" style="color:#cbd5e1"></i><br><br>Ajustes del sistema — sección de ejemplo.</div></div></div>
+        <div class="dev-pane" id="pane-cmd"><div class="panel"><div class="pane-empty"><i class="fas fa-terminal fa-2x" style="color:#cbd5e1"></i><br><br>Comandos personalizados — sección de ejemplo.</div></div></div>
+        <div class="dev-pane" id="pane-file"><div class="panel"><div class="pane-empty"><i class="fas fa-folder-open fa-2x" style="color:#cbd5e1"></i><br><br>Gestión de archivos — sección de ejemplo.</div></div></div>
+        <div class="dev-pane" id="pane-flow"><div class="panel"><div class="pane-empty"><i class="fas fa-diagram-project fa-2x" style="color:#cbd5e1"></i><br><br>Flujos de trabajo — sección de ejemplo.</div></div></div>
+      </div>
+    </div>
+  </div><!-- /view-devices -->
+
   </main>
 </div>
+
+<script>
+  function showView(name, el){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    var v = document.getElementById('view-' + name);
+    if (v) v.classList.add('active');
+    document.querySelectorAll('.side-item').forEach(s => s.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelector('.main').scrollTo(0, 0);
+  }
+  function devTab(btn, id){
+    btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.dev-pane').forEach(p => p.classList.remove('active'));
+    var pane = document.getElementById('pane-' + id);
+    if (pane) pane.classList.add('active');
+  }
+</script>
 </body>
 </html>
