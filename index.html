@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta name="version" content="1.1.0"/>
+<meta name="version" content="1.1.1"/>
 <title>EDUBOARD PRO — Pantalla interactiva para colegios</title>
 <meta name="description" content="EDUBOARD PRO: pantalla interactiva de última generación para colegios y docentes. Pizarra digital, IA educativa, gestión TI y simulador interactivo del panel."/>
 <meta property="og:title" content="EDUBOARD PRO — Pantalla interactiva para colegios"/>
@@ -430,7 +430,7 @@
 <div class="nav-item text-center py-3 px-4 mb-1" id="fullscreen-toggle">
 <i class="fas fa-expand fa-xl mb-2"></i>
 </div>
-<div class="nav-version app-version">v1.1.0</div>
+<div class="nav-version app-version">v1.1.1</div>
 </div>
 <!-- Tablet: Horizontal inline -->
 <div class="d-none d-md-flex d-lg-none flex-column flex-fill">
@@ -672,6 +672,10 @@ Cerrar
         // Attach listeners a cards de video.
         // Solo se habilitan los que tienen video real (YouTube o .mp4 existente);
         // los .mp4 que aún no existen quedan deshabilitados ("Próximamente").
+        // Videos .mp4 ya disponibles en /videos/. Añade el nombre del archivo
+        // (p. ej. 'home.mp4') cuando lo subas para activar su tarjeta.
+        const AVAILABLE_VIDEOS = [];
+
         // Habilita una tarjeta de video (click + teclado + roles a11y)
         function enableCard(card, videoPath) {
             card.classList.add('has-video');
@@ -690,11 +694,9 @@ Cerrar
                     card.classList.add('is-youtube');
                     enableCard(card, videoPath);
                 } else {
-                    const full = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
-                    fetch(full, { method: 'HEAD' }).then(r => {
-                        if (r.ok) enableCard(card, videoPath);
-                        else card.classList.add('no-video');   // deshabilitado, sin click
-                    }).catch(() => card.classList.add('no-video'));
+                    const name = videoPath.replace('videos/', '');
+                    if (AVAILABLE_VIDEOS.includes(name)) enableCard(card, videoPath);
+                    else card.classList.add('no-video');   // aún no disponible -> sin red ni 404
                 }
             });
         }
