@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="version" content="1.0.0"/>
 <title>EDUBOARD PRO — Pantalla interactiva para colegios</title>
 <meta name="description" content="EDUBOARD PRO: pantalla interactiva de última generación para colegios y docentes. Pizarra digital, IA educativa, gestión TI y simulador interactivo del panel."/>
 <meta property="og:title" content="EDUBOARD PRO — Pantalla interactiva para colegios"/>
@@ -135,8 +136,14 @@
             cursor: pointer;
             position: relative;
         }
-        /* Marca de disponibilidad de video */
-        .feature-card.no-video .fa-play-circle { opacity: .35; }
+        /* Videos aún no disponibles -> tarjeta deshabilitada */
+        .feature-card.no-video { cursor: default; }
+        .feature-card.no-video:hover {
+            transform: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .feature-card.no-video .fa-play-circle { display: none; }
         .feature-card.no-video::after {
             content: 'Próximamente';
             position: absolute; top: 8px; right: 8px;
@@ -145,6 +152,12 @@
             padding: 2px 9px; border-radius: 10px;
         }
         .feature-card.is-youtube .fa-play-circle { color: #ff3b30; }
+        /* Badge de versión */
+        .version-badge {
+            position: fixed; bottom: 8px; right: 12px;
+            font-size: 10px; color: rgba(255, 255, 255, 0.4);
+            letter-spacing: .5px; pointer-events: none; user-select: none; z-index: 1500;
+        }
         /* Toast */
         #toast {
             position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px);
@@ -440,6 +453,7 @@ Tu navegador no soporta video HTML5.
 </div>
 </div>
 </div>
+<span class="version-badge">v1.0.0</span>
 <!-- Lightbox grande para videos de YouTube -->
 <div class="yt-lightbox" id="yt-lightbox">
 <button class="yt-lightbox-close" id="yt-lightbox-close" type="button" aria-label="Cerrar video">
@@ -525,17 +539,11 @@ Cerrar
             t._h = setTimeout(() => t.classList.remove('show'), 2400);
         }
 
-        // Manejo de videos
+        // Manejo de videos (solo se llama desde cards con video real)
         function playVideo(videoPath) {
             const ytId = getYouTubeId(videoPath);
-            // YouTube (horizontal 16:9) -> lightbox grande
-            if (ytId) { openYtLightbox(ytId); return; }
-
-            // .mp4 -> verificar que exista antes de abrir (evita el cuadro negro)
-            const fullVideoPath = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
-            fetch(fullVideoPath, { method: 'HEAD' })
-                .then(r => r.ok ? playMp4(fullVideoPath) : showToast('🎬 Video próximamente'))
-                .catch(() => showToast('🎬 Video próximamente'));
+            if (ytId) { openYtLightbox(ytId); return; }   // YouTube -> lightbox
+            playMp4(videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`);
         }
 
         // Reproduce un .mp4 en la columna lateral (desktop) o el modal (mobile)
@@ -583,21 +591,26 @@ Cerrar
             }
         }
         
-        // Attach listeners a cards de video + marcar disponibilidad
+        // Attach listeners a cards de video.
+        // Solo se habilitan los que tienen video real (YouTube o .mp4 existente);
+        // los .mp4 que aún no existen quedan deshabilitados ("Próximamente").
         function attachVideoListeners() {
             document.querySelectorAll('[data-video]').forEach(card => {
                 const videoPath = card.getAttribute('data-video');
-                card.addEventListener('click', function() {
-                    if (videoPath) playVideo(videoPath);
-                });
-                // Marca visual: YouTube = disponible; .mp4 = verificar si existe
+                if (!videoPath) return;
                 if (getYouTubeId(videoPath)) {
                     card.classList.add('has-video', 'is-youtube');
-                } else if (videoPath) {
+                    card.addEventListener('click', () => playVideo(videoPath));
+                } else {
                     const full = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
-                    fetch(full, { method: 'HEAD' })
-                        .then(r => { card.classList.add(r.ok ? 'has-video' : 'no-video'); })
-                        .catch(() => card.classList.add('no-video'));
+                    fetch(full, { method: 'HEAD' }).then(r => {
+                        if (r.ok) {
+                            card.classList.add('has-video');
+                            card.addEventListener('click', () => playVideo(videoPath));
+                        } else {
+                            card.classList.add('no-video');   // deshabilitado, sin click
+                        }
+                    }).catch(() => card.classList.add('no-video'));
                 }
             });
         }
