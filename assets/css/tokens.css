@@ -1,0 +1,41 @@
+/* ============================================================
+   tokens.css — Design tokens compartidos del demo Eduboard Pro
+   Una sola fuente de verdad para color, radios, sombras y tipografía.
+   Lo consumen el demo (tema oscuro) y la consola DMS (tema claro).
+   ============================================================ */
+:root {
+  /* Marca */
+  --brand:        #3b82f6;
+  --brand-strong: #2563eb;
+
+  /* Superficies claras (DMS / simulador) */
+  --bg:      #eef2f7;
+  --panel:   #ffffff;
+  --ink:     #1f2a44;
+  --muted:   #7c8aa5;
+  --line:    #e7ecf3;
+  --blue:    #3b82f6;
+  --blue2:   #60a5fa;
+  --green:   #16a34a;
+  --greenbg: #dcfce7;
+  --orange:  #f59e0b;
+  --red:     #ef4444;
+  --navy:    #1c2030;
+
+  /* Tema oscuro (demo) */
+  --demo-bg-1:   #1a1a1a;
+  --demo-bg-2:   #2d2d2d;
+  --demo-card:   rgba(255, 255, 255, 0.08);
+  --demo-border: rgba(255, 255, 255, 0.20);
+  --demo-soft:   rgba(255, 255, 255, 0.10);
+
+  /* Escala compartida */
+  --radius-sm: 8px;
+  --radius:    14px;
+  --radius-lg: 18px;
+  --gap:       16px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow:    0 14px 36px rgba(0, 0, 0, 0.18);
+
+  --font: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+}

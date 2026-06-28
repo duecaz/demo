@@ -5,13 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DMS — Consola de gestión Eduboard Pro</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png"/>
+<link href="../assets/css/tokens.css" rel="stylesheet"/>
 <link href="../assets/vendor/fontawesome/css/all.min.css" rel="stylesheet"/>
 <style>
-  :root{
-    --bg:#eef2f7; --panel:#ffffff; --ink:#1f2a44; --muted:#7c8aa5;
-    --line:#e7ecf3; --blue:#3b82f6; --blue2:#60a5fa; --green:#16a34a;
-    --greenbg:#dcfce7; --orange:#f59e0b; --red:#ef4444; --navy:#1c2030;
-  }
+  /* Tokens compartidos en ../assets/css/tokens.css */
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Roboto',system-ui,sans-serif;font-size:13px}
   .app{display:flex;min-height:100vh}
@@ -390,7 +387,7 @@
         <div class="dev-pane active" id="pane-basic">
           <!-- Resumen del dispositivo -->
           <div class="panel dev-summary" style="margin-bottom:16px">
-            <div class="dev-thumb"><img src="pantala_interactiva.webp" alt="Pantalla del dispositivo"></div>
+            <div class="dev-thumb"><img src="../menu/pantala_interactiva.webp" alt="Pantalla del dispositivo"></div>
             <div class="dev-meta">
               <div class="dev-name">EDUBOARD-Aula-203 <span class="badge green"><i class="fas fa-circle" style="font-size:6px;vertical-align:middle"></i> En línea</span></div>
               <div class="dev-id">A4:7B:E2:09:5C:18 · 192.168.1.105</div>
@@ -446,7 +443,7 @@
               </div>
               <div class="capture-frame">
                 <span class="capture-badge"><span class="dot"></span> EN VIVO</span>
-                <img src="pantala_interactiva.webp" alt="Contenido actual de la pantalla del dispositivo">
+                <img src="../menu/pantala_interactiva.webp" alt="Contenido actual de la pantalla del dispositivo">
               </div>
             </div>
             <div class="panel">
