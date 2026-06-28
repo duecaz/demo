@@ -159,6 +159,12 @@
             font-size: 10px; color: rgba(255, 255, 255, 0.4);
             letter-spacing: .5px; pointer-events: none; user-select: none; z-index: 1500;
         }
+        /* Versión en el menú lateral */
+        .nav-version {
+            font-size: 11px; color: rgba(255, 255, 255, 0.45);
+            text-align: center; padding: 10px 4px 4px; margin-top: auto;
+            letter-spacing: .5px;
+        }
         /* Toast */
         #toast {
             position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px);
@@ -424,6 +430,7 @@
 <div class="nav-item text-center py-3 px-4 mb-1" id="fullscreen-toggle">
 <i class="fas fa-expand fa-xl mb-2"></i>
 </div>
+<div class="nav-version app-version">v1.1.0</div>
 </div>
 <!-- Tablet: Horizontal inline -->
 <div class="d-none d-md-flex d-lg-none flex-column flex-fill">
@@ -455,6 +462,7 @@
 <i class="fas fa-expand"></i>
 <span class="nav-text ms-2">Pantalla</span>
 </div>
+<div class="nav-version app-version">v1.1.0</div>
 </div>
 <!-- Mobile: Horizontal compacto -->
 <div class="d-md-none d-flex flex-row overflow-auto py-2" style="-webkit-overflow-scrolling: touch;">
@@ -524,7 +532,7 @@ Tu navegador no soporta video HTML5.
 </div>
 </div>
 </div>
-<span class="version-badge">v1.1.0</span>
+<span class="version-badge app-version">v1.1.0</span>
 <!-- Lightbox grande para videos de YouTube -->
 <div class="yt-lightbox" id="yt-lightbox">
 <button class="yt-lightbox-close" id="yt-lightbox-close" type="button" aria-label="Cerrar video">
@@ -766,6 +774,9 @@ Cerrar
         // Initialize mute button state and load section from hash (deep-link)
         document.addEventListener('DOMContentLoaded', () => {
             updateMuteButton();
+            // Versión desde el <meta> -> todos los .app-version (badge + menú)
+            const _v = (document.querySelector('meta[name="version"]') || {}).content;
+            if (_v) document.querySelectorAll('.app-version').forEach(e => e.textContent = 'v' + _v);
             handleHash();
         });
     </script>
