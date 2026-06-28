@@ -377,6 +377,17 @@
         @keyframes skel { 100% { transform: translateX(100%); } }
         .skel-title { height: 34px; width: 45%; margin-bottom: 18px; }
         .skel-row { height: 120px; margin-bottom: 16px; }
+
+        /* ===================== ACCESIBILIDAD (focus por teclado) ===================== */
+        .nav-item:focus-visible,
+        .feature-card:focus-visible,
+        .q-tile:focus-visible,
+        .b-cta a:focus-visible,
+        .btn:focus-visible {
+            outline: 3px solid var(--brand);
+            outline-offset: 2px;
+        }
+        .nav-item:focus-visible { outline-offset: -2px; }
     </style>
 </head>
 <body class="text-white bg-dark">
@@ -653,22 +664,28 @@ Cerrar
         // Attach listeners a cards de video.
         // Solo se habilitan los que tienen video real (YouTube o .mp4 existente);
         // los .mp4 que aún no existen quedan deshabilitados ("Próximamente").
+        // Habilita una tarjeta de video (click + teclado + roles a11y)
+        function enableCard(card, videoPath) {
+            card.classList.add('has-video');
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', 'Reproducir video');
+            const go = () => playVideo(videoPath);
+            card.addEventListener('click', go);
+            card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+        }
         function attachVideoListeners() {
             document.querySelectorAll('[data-video]').forEach(card => {
                 const videoPath = card.getAttribute('data-video');
                 if (!videoPath) return;
                 if (getYouTubeId(videoPath)) {
-                    card.classList.add('has-video', 'is-youtube');
-                    card.addEventListener('click', () => playVideo(videoPath));
+                    card.classList.add('is-youtube');
+                    enableCard(card, videoPath);
                 } else {
                     const full = videoPath.includes('videos/') ? videoPath : `videos/${videoPath}`;
                     fetch(full, { method: 'HEAD' }).then(r => {
-                        if (r.ok) {
-                            card.classList.add('has-video');
-                            card.addEventListener('click', () => playVideo(videoPath));
-                        } else {
-                            card.classList.add('no-video');   // deshabilitado, sin click
-                        }
+                        if (r.ok) enableCard(card, videoPath);
+                        else card.classList.add('no-video');   // deshabilitado, sin click
                     }).catch(() => card.classList.add('no-video'));
                 }
             });
@@ -682,21 +699,25 @@ Cerrar
             });
         }
 
-        // Navegación del sidebar -> cambia el hash (deep-link por sección)
+        // Navegación del sidebar -> cambia el hash (deep-link) + accesible por teclado
         document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-            item.addEventListener('click', function() {
-                const page = this.getAttribute('data-page');
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+            const go = () => {
+                const page = item.getAttribute('data-page');
                 if (('#' + page) === location.hash) { handleHash(); }  // reabrir misma sección
                 else { location.hash = page; }
-            });
+            };
+            item.addEventListener('click', go);
+            item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
         });
 
         // Marca activa + carga según el hash (#hardware, #gestion, ...)
         function handleHash() {
             let page = (location.hash || '#home').slice(1);
             if (!document.querySelector('[data-page="' + page + '"]')) page = 'home';
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            document.querySelectorAll('[data-page="' + page + '"]').forEach(nav => nav.classList.add('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => { nav.classList.remove('active'); nav.removeAttribute('aria-current'); });
+            document.querySelectorAll('[data-page="' + page + '"]').forEach(nav => { nav.classList.add('active'); nav.setAttribute('aria-current', 'page'); });
             loadPage(page);
         }
         window.addEventListener('hashchange', handleHash);
@@ -722,17 +743,19 @@ Cerrar
             if (e.key === 'Escape' && ytLightbox.classList.contains('show')) closeYtLightbox();
         });
 
-        // Pantalla completa
+        // Pantalla completa (accesible por teclado)
         function setupFullscreen(elementId) {
             const element = document.getElementById(elementId);
             if (element) {
-                element.addEventListener('click', function() {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen();
-                    } else {
-                        document.exitFullscreen();
-                    }
-                });
+                element.setAttribute('role', 'button');
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('aria-label', 'Pantalla completa');
+                const tg = () => {
+                    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+                    else document.exitFullscreen();
+                };
+                element.addEventListener('click', tg);
+                element.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tg(); } });
             }
         }
         
