@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta name="version" content="1.1.3"/>
+<meta name="version" content="1.1.4"/>
 <title>EDUBOARD PRO — Pantalla interactiva para colegios</title>
 <meta name="description" content="EDUBOARD PRO: pantalla interactiva de última generación para colegios y docentes. Pizarra digital, IA educativa, gestión TI y simulador interactivo del panel."/>
 <meta property="og:title" content="EDUBOARD PRO — Pantalla interactiva para colegios"/>
@@ -320,24 +320,6 @@
 
         .tile-label { font-size: .85rem; color: rgba(255,255,255,.85); display: flex; align-items: center; gap: 8px; }
 
-        /* ===================== SIMULADOR A PANTALLA COMPLETA (en la misma ventana, tipo kiosko) ===================== */
-        #sim-overlay {
-            position: fixed; inset: 0;
-            background: linear-gradient(135deg, var(--demo-bg-1) 0%, var(--demo-bg-2) 100%);
-            z-index: 4000; display: none;
-        }
-        #sim-overlay.show { display: block; }
-        #sim-overlay iframe { width: 100%; height: 100%; border: 0; background: transparent; }
-        #sim-close {
-            position: fixed; top: 14px; right: 18px; z-index: 4001;
-            display: flex; align-items: center; gap: 8px;
-            height: 48px; padding: 0 20px 0 16px;
-            border: none; border-radius: 26px;
-            background: var(--brand); color: #fff; font-size: 15px; font-weight: 700;
-            cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,.5);
-        }
-        #sim-close:hover { background: var(--brand-strong); }
-
         /* ===================== SKELETON LOADER ===================== */
         .skel-wrap { padding: 8px; }
         .skel { background: var(--demo-card); border-radius: var(--radius); position: relative; overflow: hidden; }
@@ -396,7 +378,7 @@
 <div class="nav-item text-center py-3 px-4 mb-1" id="fullscreen-toggle">
 <i class="fas fa-expand fa-xl mb-2"></i>
 </div>
-<div class="nav-version app-version">v1.1.3</div>
+<div class="nav-version app-version">v1.1.4</div>
 </div>
 <!-- Tablet: Horizontal inline -->
 <div class="d-none d-md-flex d-lg-none flex-column flex-fill">
@@ -428,7 +410,7 @@
 <i class="fas fa-expand"></i>
 <span class="nav-text ms-2">Pantalla</span>
 </div>
-<div class="nav-version app-version">v1.1.3</div>
+<div class="nav-version app-version">v1.1.4</div>
 </div>
 <!-- Mobile: Horizontal compacto -->
 <div class="d-md-none d-flex flex-row overflow-auto py-2" style="-webkit-overflow-scrolling: touch;">
@@ -498,7 +480,7 @@ Tu navegador no soporta video HTML5.
 </div>
 </div>
 </div>
-<span class="version-badge app-version">v1.1.3</span>
+<span class="version-badge app-version">v1.1.4</span>
 <!-- Lightbox grande para videos de YouTube -->
 <div class="yt-lightbox" id="yt-lightbox">
 <button class="yt-lightbox-close" id="yt-lightbox-close" type="button" aria-label="Cerrar video">
@@ -506,14 +488,6 @@ Tu navegador no soporta video HTML5.
 Cerrar
 </button>
 <div class="yt-frame" id="yt-frame"></div>
-</div>
-<!-- Simulador a pantalla completa (misma ventana, tipo kiosko) -->
-<div id="sim-overlay">
-<button id="sim-close" type="button" onclick="closeSimFullscreen()" aria-label="Salir de pantalla completa">
-<i class="fas fa-times"></i>
-Salir
-</button>
-<iframe id="sim-frame" title="Simulador EDUBOARD a pantalla completa" allowtransparency="true"></iframe>
 </div>
 <script src="assets/vendor/bootstrap.bundle.min.js"></script>
 <script>
@@ -579,17 +553,6 @@ Salir
         function closeYtLightbox() {
             ytLightbox.classList.remove('show');
             ytFrame.innerHTML = '';
-        }
-
-        // Simulador a pantalla completa EN LA MISMA VENTANA (tipo kiosko, con "Salir")
-        function openSimFullscreen() {
-            const f = document.getElementById('sim-frame');
-            f.src = 'menu/index.html?t=' + Date.now();
-            document.getElementById('sim-overlay').classList.add('show');
-        }
-        function closeSimFullscreen() {
-            document.getElementById('sim-overlay').classList.remove('show');
-            document.getElementById('sim-frame').src = '';
         }
 
         // Toast breve (p. ej. "Video próximamente")
@@ -735,9 +698,7 @@ Salir
             if (e.target === ytLightbox) closeYtLightbox();
         });
         document.addEventListener('keydown', function(e) {
-            if (e.key !== 'Escape') return;
-            if (ytLightbox.classList.contains('show')) closeYtLightbox();
-            if (document.getElementById('sim-overlay').classList.contains('show')) closeSimFullscreen();
+            if (e.key === 'Escape' && ytLightbox.classList.contains('show')) closeYtLightbox();
         });
 
         // Pantalla completa (accesible por teclado)
