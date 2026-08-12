@@ -247,17 +247,29 @@
     t.destino = { x: m.clientX - r.left, y: m.clientY - r.top, presion: m.pressure || 0, t: ahora };
   });
 
-  const soltar = e => {
-    const t = activos.get(e.pointerId);
+  // Cerrar por id, no por evento: el mismo camino sirve para el dedo que se
+  // levanta bien y para el que desaparece sin avisar. Es idempotente, así que
+  // no pasa nada si llegan dos avisos del mismo dedo.
+  function cerrar(pointerId) {
+    const t = activos.get(pointerId);
     if (!t) return;
-    activos.delete(e.pointerId);
+    activos.delete(pointerId);
     trazos.push(t);
     pintar(capaCtx, t);
     actualizarBotones();
-  };
+  }
+
+  const soltar = e => cerrar(e.pointerId);
 
   lienzo.addEventListener("pointerup", soltar);
   lienzo.addEventListener("pointercancel", soltar);
+  // Rechazo de palma, el driver que se queda la captura, un gesto del sistema:
+  // sin esto el dedo se quedaría vivo en el diccionario para siempre.
+  lienzo.addEventListener("lostpointercapture", soltar);
+
+  const cerrarTodos = () => { for (const id of [...activos.keys()]) cerrar(id); };
+  window.addEventListener("blur", cerrarTodos);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) cerrarTodos(); });
   lienzo.addEventListener("contextmenu", e => e.preventDefault());
 
   function grosorDe(e, vel) {
