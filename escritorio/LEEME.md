@@ -13,8 +13,10 @@ Tres caminos, de menos a más instalación:
 
 **1. Descargarlo ya compilado.** Cada cambio en esta carpeta dispara el flujo
 *App de escritorio* en la pestaña Actions del repo. Entra en la última
-ejecución y baja el artefacto `Trazos-windows-x64`. Es autocontenido: no hace
-falta instalar .NET, se ejecuta y ya.
+ejecución y baja el artefacto `Trazos-windows-x64` del final de la página
+([primera compilación](https://github.com/duecaz/demo/actions/runs/31647884700)).
+Es autocontenido: no hace falta instalar .NET, se descomprime y se ejecuta.
+Ocupa unos 60 MB porque lleva dentro el runtime de .NET.
 
 **2. Con el SDK de .NET** (`winget install Microsoft.DotNet.SDK.8`):
 

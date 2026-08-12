@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'escritorio/**'
+      - '!escritorio/LEEME.md'
       - '.github/workflows/escritorio.yml'
   workflow_dispatch:
 
