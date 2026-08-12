@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f1116">
+<title>Contador de trazos</title>
+<style>
+  :root{
+    --bg:#0f1116;
+    --panel:#171a22;
+    --line:#252a35;
+    --txt:#e8ecf4;
+    --dim:#8b93a7;
+    --accent:#4da3ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{
+    background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+    display:flex;flex-direction:column;
+    -webkit-user-select:none;user-select:none;
+  }
+
+  header{
+    flex:0 0 auto;display:flex;align-items:center;gap:18px;
+    padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--line);
+  }
+  .contador{display:flex;align-items:baseline;gap:10px}
+  .contador .num{
+    font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
+    min-width:2.2ch;text-align:right;
+    transition:transform .18s cubic-bezier(.2,1.6,.4,1),color .3s ease;
+  }
+  .contador .num.pop{transform:scale(1.18);color:var(--accent)}
+  .contador .lbl{font-size:14px;color:var(--dim);letter-spacing:.4px;text-transform:uppercase}
+
+  .sep{flex:1}
+
+  .dedos{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+
+  .colores{display:flex;gap:8px}
+  .col{
+    width:30px;height:30px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform .15s ease,border-color .15s ease;
+  }
+  .col:hover{transform:scale(1.1)}
+  .col.sel{border-color:#fff;transform:scale(1.12)}
+
+  button{
+    font:inherit;font-size:14px;color:var(--txt);background:#222736;
+    border:1px solid var(--line);border-radius:10px;padding:9px 16px;cursor:pointer;
+    transition:background .15s ease,transform .1s ease;
+  }
+  button:hover{background:#2c3345}
+  button:active{transform:scale(.96)}
+  button:disabled{opacity:.4;cursor:default}
+
+  main{flex:1 1 auto;position:relative}
+  canvas{
+    display:block;width:100%;height:100%;
+    touch-action:none;cursor:crosshair;
+  }
+  .pista{
+    position:absolute;inset:0;display:grid;place-items:center;
+    color:var(--dim);font-size:17px;pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  .pista.off{opacity:0}
+
+  @media (max-width:720px){
+    header{gap:12px;padding:10px 12px;flex-wrap:wrap}
+    .contador .num{font-size:34px}
+    .dedos{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="contador">
+    <span class="num" id="num">0</span>
+    <span class="lbl">trazos</span>
+  </div>
+
+  <div class="dedos" id="dedos">0 puntos activos</div>
+
+  <div class="sep"></div>
+
+  <div class="colores" id="colores"></div>
+  <button id="deshacer" disabled>Deshacer</button>
+  <button id="limpiar" disabled>Limpiar</button>
+</header>
+
+<main>
+  <canvas id="lienzo"></canvas>
+  <div class="pista" id="pista">Dibuja con el dedo, el lápiz o el ratón</div>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const COLORES = ["#e8ecf4", "#4da3ff", "#4ade80", "#fbbf24", "#f87171", "#c084fc"];
+
+  // Cuánto persigue el trazo al dedo por fotograma de 60 Hz: más bajo = más suave
+  // pero con más retardo. 0.35 es el punto donde deja de verse dentado.
+  const SEGUIMIENTO = 0.35;
+  const SEGUIMIENTO_GROSOR = 0.18;
+  const GROSOR_BASE = 5;
+  const GROSOR_MIN = 1.6;
+  const VEL_MAX = 3.2;          // px/ms a partir de los que el trazo adelgaza del todo
+  const DIST_MIN = 0.4;         // no acumulamos puntos por debajo de esto
+
+  const lienzo   = document.getElementById("lienzo");
+  const ctx      = lienzo.getContext("2d");
+  const elNum    = document.getElementById("num");
+  const elDedos  = document.getElementById("dedos");
+  const elPista  = document.getElementById("pista");
+  const btnDesh  = document.getElementById("deshacer");
+  const btnLimp  = document.getElementById("limpiar");
+
+  // Capa donde se "cuecen" los trazos ya terminados: así cada fotograma solo
+  // redibuja los trazos vivos, no el historial entero.
+  const capa = document.createElement("canvas");
+  const capaCtx = capa.getContext("2d");
+
+  const trazos = [];                  // terminados
+  const activos = new Map();          // pointerId -> trazo en curso
+  let color = COLORES[0];
+  let dpr = 1;
+
+  /* ---------- paleta ---------- */
+
+  const cont = document.getElementById("colores");
+  COLORES.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "col" + (i === 0 ? " sel" : "");
+    b.style.background = c;
+    b.title = c;
+    b.addEventListener("pointerdown", e => e.stopPropagation());
+    b.addEventListener("click", () => {
+      color = c;
+      cont.querySelectorAll(".col").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel");
+    });
+    cont.appendChild(b);
+  });
+
+  /* ---------- lienzo ---------- */
+
+  function redimensionar() {
+    dpr = window.devicePixelRatio || 1;
+    const r = lienzo.getBoundingClientRect();
+    for (const c of [lienzo, capa]) {
+      c.width  = Math.round(r.width  * dpr);
+      c.height = Math.round(r.height * dpr);
+    }
+    for (const c of [ctx, capaCtx]) {
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.lineCap = "round";
+      c.lineJoin = "round";
+    }
+    rehacerCapa();
+  }
+
+  function rehacerCapa() {
+    capaCtx.save();
+    capaCtx.setTransform(1, 0, 0, 1, 0, 0);
+    capaCtx.clearRect(0, 0, capa.width, capa.height);
+    capaCtx.restore();
+    for (const t of trazos) pintar(capaCtx, t);
+  }
+
+  // Cada segmento se dibuja como una curva cuadrática entre los puntos medios:
+  // el punto real hace de control, así la unión no tiene esquinas.
+  function pintar(c, t) {
+    const p = t.puntos;
+    if (p.length === 0) return;
+    c.strokeStyle = t.color;
+
+    if (p.length === 1) {
+      c.beginPath();
+      c.arc(p[0].x, p[0].y, p[0].w / 2, 0, Math.PI * 2);
+      c.fillStyle = t.color;
+      c.fill();
+      return;
+    }
+
+    for (let i = 1; i < p.length; i++) {
+      const a = p[i - 1], b = p[i];
+      const desde = i === 1 ? a : { x: (p[i - 2].x + a.x) / 2, y: (p[i - 2].y + a.y) / 2 };
+      const hasta = i === p.length - 1 ? b : { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      c.lineWidth = (a.w + b.w) / 2;
+      c.beginPath();
+      c.moveTo(desde.x, desde.y);
+      c.quadraticCurveTo(a.x, a.y, hasta.x, hasta.y);
+      c.stroke();
+    }
+  }
+
+  /* ---------- entrada ---------- */
+
+  lienzo.addEventListener("pointerdown", e => {
+    if (e.button !== undefined && e.button !== 0 && e.pointerType === "mouse") return;
+    lienzo.setPointerCapture(e.pointerId);
+    e.preventDefault();
+
+    const r = lienzo.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const w = grosorDe(e, 0);
+
+    activos.set(e.pointerId, {
+      color,
+      puntos: [{ x, y, w }],
+      ex: x, ey: y, ew: w,          // posición suavizada que persigue al dedo
+      destino: { x, y, presion: e.pressure || 0, t: performance.now() },
+      vel: 0,
+    });
+
+    contar(trazos.length + activos.size);
+    elPista.classList.add("off");
+    actualizarBotones();
+  });
+
+  lienzo.addEventListener("pointermove", e => {
+    const t = activos.get(e.pointerId);
+    if (!t) return;
+    e.preventDefault();
+
+    const r = lienzo.getBoundingClientRect();
+    // getCoalescedEvents recupera las muestras que Windows agrupó entre fotogramas:
+    // sin esto un trazo rápido en pantalla táctil sale poligonal.
+    const muestras = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    const m = muestras[muestras.length - 1] || e;
+    const ahora = performance.now();
+
+    let recorrido = 0, ant = t.destino;
+    for (const s of muestras) {
+      recorrido += Math.hypot(s.clientX - r.left - ant.x, s.clientY - r.top - ant.y);
+      ant = { x: s.clientX - r.left, y: s.clientY - r.top };
+    }
+    const dt = Math.max(1, ahora - t.destino.t);
+    t.vel = t.vel + (recorrido / dt - t.vel) * 0.3;
+
+    t.destino = { x: m.clientX - r.left, y: m.clientY - r.top, presion: m.pressure || 0, t: ahora };
+  });
+
+  const soltar = e => {
+    const t = activos.get(e.pointerId);
+    if (!t) return;
+    activos.delete(e.pointerId);
+    trazos.push(t);
+    pintar(capaCtx, t);
+    actualizarBotones();
+  };
+
+  lienzo.addEventListener("pointerup", soltar);
+  lienzo.addEventListener("pointercancel", soltar);
+  lienzo.addEventListener("contextmenu", e => e.preventDefault());
+
+  function grosorDe(e, vel) {
+    // El lápiz manda con su presión; con dedo o ratón el grosor sale de la
+    // velocidad, que es lo que hace que el trazo parezca tinta y no un cable.
+    if (e.pointerType === "pen" && e.pressure > 0) {
+      return GROSOR_MIN + (GROSOR_BASE * 1.6 - GROSOR_MIN) * e.pressure;
+    }
+    const k = Math.min(1, vel / VEL_MAX);
+    return GROSOR_MIN + (GROSOR_BASE - GROSOR_MIN) * (1 - k);
+  }
+
+  /* ---------- bucle ---------- */
+
+  let previo = performance.now();
+
+  function bucle(ahora) {
+    const dt = Math.min(64, ahora - previo);
+    previo = ahora;
+
+    if (activos.size) {
+      // Factor de easing normalizado al tiempo real del fotograma: la suavidad
+      // es la misma a 60 Hz que a 165 Hz.
+      const k  = 1 - Math.pow(1 - SEGUIMIENTO, dt / 16.667);
+      const kg = 1 - Math.pow(1 - SEGUIMIENTO_GROSOR, dt / 16.667);
+
+      for (const t of activos.values()) {
+        t.ex += (t.destino.x - t.ex) * k;
+        t.ey += (t.destino.y - t.ey) * k;
+
+        const objetivo = t.destino.presion > 0
+          ? GROSOR_MIN + (GROSOR_BASE * 1.6 - GROSOR_MIN) * t.destino.presion
+          : GROSOR_MIN + (GROSOR_BASE - GROSOR_MIN) * (1 - Math.min(1, t.vel / VEL_MAX));
+        t.ew += (objetivo - t.ew) * kg;
+
+        const ult = t.puntos[t.puntos.length - 1];
+        if (Math.hypot(t.ex - ult.x, t.ey - ult.y) >= DIST_MIN) {
+          t.puntos.push({ x: t.ex, y: t.ey, w: t.ew });
+        } else {
+          ult.w = t.ew;
+        }
+      }
+    }
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, lienzo.width, lienzo.height);
+    ctx.drawImage(capa, 0, 0);
+    ctx.restore();
+    for (const t of activos.values()) pintar(ctx, t);
+
+    elDedos.textContent = activos.size === 1
+      ? "1 punto activo"
+      : activos.size + " puntos activos";
+
+    requestAnimationFrame(bucle);
+  }
+
+  /* ---------- contador y botones ---------- */
+
+  function contar(n) {
+    elNum.textContent = n;
+    elNum.classList.remove("pop");
+    void elNum.offsetWidth;   // reinicia la animación
+    elNum.classList.add("pop");
+  }
+
+  function actualizarBotones() {
+    const n = trazos.length + activos.size;
+    btnDesh.disabled = trazos.length === 0;
+    btnLimp.disabled = n === 0;
+    elNum.textContent = n;
+  }
+
+  btnDesh.addEventListener("click", () => {
+    if (!trazos.length) return;
+    trazos.pop();
+    rehacerCapa();
+    actualizarBotones();
+    if (!trazos.length && !activos.size) elPista.classList.remove("off");
+  });
+
+  btnLimp.addEventListener("click", () => {
+    trazos.length = 0;
+    activos.clear();
+    rehacerCapa();
+    actualizarBotones();
+    elPista.classList.remove("off");
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey && e.key.toLowerCase() === "z") { e.preventDefault(); btnDesh.click(); }
+    if (e.key === "Delete" || e.key === "Escape") btnLimp.click();
+  });
+
+  window.addEventListener("resize", redimensionar);
+  redimensionar();
+  requestAnimationFrame(bucle);
+})();
+</script>
+</body>
+</html>
