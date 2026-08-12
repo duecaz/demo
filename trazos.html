@@ -31,22 +31,17 @@
   .contador .num{
     font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
     min-width:2.2ch;text-align:right;
-    transition:transform .18s cubic-bezier(.2,1.6,.4,1),color .3s ease;
   }
-  .contador .num.pop{transform:scale(1.18);color:var(--accent)}
+  /* Animación y no transición: el número tiene que volver solo a su tamaño. */
+  .contador .num.pop{animation:pop .3s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{
+    0%  {transform:scale(1);   color:var(--txt)}
+    40% {transform:scale(1.2); color:var(--accent)}
+    100%{transform:scale(1);   color:var(--txt)}
+  }
   .contador .lbl{font-size:14px;color:var(--dim);letter-spacing:.4px;text-transform:uppercase}
 
   .sep{flex:1}
-
-  .dedos{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
-
-  .colores{display:flex;gap:8px}
-  .col{
-    width:30px;height:30px;border-radius:50%;border:2px solid transparent;
-    cursor:pointer;transition:transform .15s ease,border-color .15s ease;
-  }
-  .col:hover{transform:scale(1.1)}
-  .col.sel{border-color:#fff;transform:scale(1.12)}
 
   button{
     font:inherit;font-size:14px;color:var(--txt);background:#222736;
@@ -72,7 +67,6 @@
   @media (max-width:720px){
     header{gap:12px;padding:10px 12px;flex-wrap:wrap}
     .contador .num{font-size:34px}
-    .dedos{display:none}
   }
 </style>
 </head>
@@ -81,14 +75,11 @@
 <header>
   <div class="contador">
     <span class="num" id="num">0</span>
-    <span class="lbl">trazos</span>
+    <span class="lbl">puntos activos</span>
   </div>
-
-  <div class="dedos" id="dedos">0 puntos activos</div>
 
   <div class="sep"></div>
 
-  <div class="colores" id="colores"></div>
   <button id="deshacer" disabled>Deshacer</button>
   <button id="limpiar" disabled>Limpiar</button>
 </header>
@@ -102,8 +93,6 @@
 (() => {
   "use strict";
 
-  const COLORES = ["#e8ecf4", "#4da3ff", "#4ade80", "#fbbf24", "#f87171", "#c084fc"];
-
   // Cuánto persigue el trazo al dedo por fotograma de 60 Hz: más bajo = más suave
   // pero con más retardo. 0.35 es el punto donde deja de verse dentado.
   const SEGUIMIENTO = 0.35;
@@ -116,7 +105,6 @@
   const lienzo   = document.getElementById("lienzo");
   const ctx      = lienzo.getContext("2d");
   const elNum    = document.getElementById("num");
-  const elDedos  = document.getElementById("dedos");
   const elPista  = document.getElementById("pista");
   const btnDesh  = document.getElementById("deshacer");
   const btnLimp  = document.getElementById("limpiar");
@@ -128,25 +116,15 @@
 
   const trazos = [];                  // terminados
   const activos = new Map();          // pointerId -> trazo en curso
-  let color = COLORES[0];
   let dpr = 1;
 
-  /* ---------- paleta ---------- */
+  /* ---------- color ---------- */
 
-  const cont = document.getElementById("colores");
-  COLORES.forEach((c, i) => {
-    const b = document.createElement("button");
-    b.className = "col" + (i === 0 ? " sel" : "");
-    b.style.background = c;
-    b.title = c;
-    b.addEventListener("pointerdown", e => e.stopPropagation());
-    b.addEventListener("click", () => {
-      color = c;
-      cont.querySelectorAll(".col").forEach(x => x.classList.remove("sel"));
-      b.classList.add("sel");
-    });
-    cont.appendChild(b);
-  });
+  // Ángulo áureo: cada trazo cae lo más lejos posible del anterior en el
+  // círculo de color, así no se repiten ni los seguidos ni los simultáneos.
+  // El giro no se reinicia al limpiar, para que el color tampoco se repita ahí.
+  let giro = 0;
+  const siguienteColor = () => "hsl(" + ((giro++ * 137.508) % 360).toFixed(1) + ", 85%, 66%)";
 
   /* ---------- lienzo ---------- */
 
@@ -212,14 +190,14 @@
     const w = grosorDe(e, 0);
 
     activos.set(e.pointerId, {
-      color,
+      color: siguienteColor(),
       puntos: [{ x, y, w }],
       ex: x, ey: y, ew: w,          // posición suavizada que persigue al dedo
       destino: { x, y, presion: e.pressure || 0, t: performance.now() },
       vel: 0,
     });
 
-    contar(trazos.length + activos.size);
+    latir();
     elPista.classList.add("off");
     actualizarBotones();
   });
@@ -321,27 +299,22 @@
     ctx.restore();
     for (const t of activos.values()) pintar(ctx, t);
 
-    elDedos.textContent = activos.size === 1
-      ? "1 punto activo"
-      : activos.size + " puntos activos";
-
     requestAnimationFrame(bucle);
   }
 
   /* ---------- contador y botones ---------- */
 
-  function contar(n) {
-    elNum.textContent = n;
+  function latir() {
     elNum.classList.remove("pop");
     void elNum.offsetWidth;   // reinicia la animación
     elNum.classList.add("pop");
   }
+  elNum.addEventListener("animationend", () => elNum.classList.remove("pop"));
 
   function actualizarBotones() {
-    const n = trazos.length + activos.size;
+    elNum.textContent = activos.size;
     btnDesh.disabled = trazos.length === 0;
-    btnLimp.disabled = n === 0;
-    elNum.textContent = n;
+    btnLimp.disabled = trazos.length === 0 && activos.size === 0;
   }
 
   btnDesh.addEventListener("click", () => {
